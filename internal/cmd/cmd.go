@@ -110,6 +110,8 @@ func runProxy(ctx context.Context, l *slog.Logger, conf *configuration) (err err
 		return fmt.Errorf("creating proxy: %w", err)
 	}
 
+	l.InfoContext(ctx, "connection config", "socks5", conf.Socks5)
+
 	// Start the proxy server.
 	err = dnsProxy.Start(ctx)
 	if err != nil {
