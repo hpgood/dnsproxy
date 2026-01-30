@@ -157,6 +157,8 @@ type configuration struct {
 	// Pprof defines whether the pprof information needs to be exposed via
 	// localhost:6060 or not.
 	Pprof bool `yaml:"pprof"`
+	// Socks5 is the address of the SOCKS5 proxy server to use for outbound DNS
+	Socks5 string `yaml:"socks5"`
 
 	// Version, if true, prints the program version, and exits.
 	Version bool `yaml:"version"`
