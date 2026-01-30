@@ -52,7 +52,11 @@ type ResponseHandler func(dctx *DNSContext, err error)
 type Config struct {
 	// Logger is used as the base logger for the proxy service.  If nil,
 	// [slog.Default] with [LogPrefix] is used.
-	Logger *slog.Logger
+	Logger *slog.Logger `yaml:"-"`
+
+	// Socks5 is the address of the SOCKS5 proxy server to use for outbound DNS
+	// requests.  If empty, no SOCKS5 proxy will be used.
+	Socks5 string `yaml:"socks5"`
 
 	// TrustedProxies is the trusted list of CIDR networks to detect proxy
 	// servers addresses from where the DoH requests should be handled.  The
