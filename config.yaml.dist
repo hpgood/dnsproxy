@@ -16,5 +16,7 @@ ratelimit-subnet-len-ipv4: 24
 ratelimit-subnet-len-ipv6: 64
 udp-buf-size: 0
 upstream:
-  - "1.1.1.1:53"
+  - "https://cloudflare-dns.com/dns-query"
 timeout: '10s'
+#socks5: "socks5://user:pass@127.0.0.1:1080"
+socks5: "127.0.0.1:1080"
