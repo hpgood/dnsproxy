@@ -9,7 +9,8 @@ A simple DNS proxy server that supports all existing DNS protocols including
 it can work as a `DNS-over-HTTPS`, `DNS-over-TLS` or `DNS-over-QUIC` server.
 
 Currect version support socks5!
-attention:
+
+Attention:
  when your config https://cloudflare-dns.com/dns-query to upstream,
  in order to use socks5, you need add "94.140.14.14 dns.adguard.com" to /etc/hosts first
 
