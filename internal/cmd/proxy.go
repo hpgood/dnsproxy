@@ -68,6 +68,7 @@ func createProxyConfig(
 		CacheOptimistic:          conf.CacheOptimistic,
 		RefuseAny:                conf.RefuseAny,
 		HTTP3:                    conf.HTTP3,
+		Socks5:                   conf.Socks5,
 		// TODO(e.burkov):  The following CIDRs are aimed to match any address.
 		// This is not quite proper approach to be used by default so think
 		// about configuring it.
@@ -146,7 +147,9 @@ func (conf *configuration) initUpstreams(
 		HTTPVersions:       httpVersions,
 		InsecureSkipVerify: conf.Insecure,
 		Timeout:            timeout,
+		SOCKS5Addr:         conf.Socks5, //支持socks5
 	}
+
 	boot, err := initBootstrap(ctx, l, conf.BootstrapDNS, bootOpts)
 	if err != nil {
 		return fmt.Errorf("initializing bootstrap: %w", err)
@@ -158,6 +161,7 @@ func (conf *configuration) initUpstreams(
 		InsecureSkipVerify: conf.Insecure,
 		Bootstrap:          boot,
 		Timeout:            timeout,
+		SOCKS5Addr:         conf.Socks5, //支持socks5
 	}
 	upstreams := loadServersList(conf.Upstreams)
 
@@ -171,6 +175,7 @@ func (conf *configuration) initUpstreams(
 		HTTPVersions: httpVersions,
 		Bootstrap:    boot,
 		Timeout:      min(defaultLocalTimeout, timeout),
+		SOCKS5Addr:   conf.Socks5, //支持socks5
 	}
 	privateUpstreams := loadServersList(conf.PrivateRDNSUpstreams)
 
