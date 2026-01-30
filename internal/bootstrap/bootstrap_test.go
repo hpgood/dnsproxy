@@ -99,6 +99,7 @@ func TestResolveDialContext(t *testing.T) {
 
 		t.Run(tc.name, func(t *testing.T) {
 			dialContext, err := bootstrap.ResolveDialContext(
+				"",
 				&url.URL{Host: netutil.JoinHostPort(hostname, port)},
 				testTimeout,
 				bootstrap.ParallelResolver{r},
@@ -132,6 +133,7 @@ func TestResolveDialContext(t *testing.T) {
 		}
 
 		dialContext, err := bootstrap.ResolveDialContext(
+			"",
 			&url.URL{Host: netutil.JoinHostPort(hostname, port)},
 			testTimeout,
 			bootstrap.ParallelResolver{r},
@@ -149,6 +151,7 @@ func TestResolveDialContext(t *testing.T) {
 			`missing port in address`
 
 		dialContext, err := bootstrap.ResolveDialContext(
+			"",
 			&url.URL{Host: "bad hostname"},
 			testTimeout,
 			nil,
@@ -162,6 +165,7 @@ func TestResolveDialContext(t *testing.T) {
 
 	t.Run("no_resolvers", func(t *testing.T) {
 		dialContext, err := bootstrap.ResolveDialContext(
+			"",
 			&url.URL{Host: netutil.JoinHostPort(hostname, port)},
 			testTimeout,
 			nil,
