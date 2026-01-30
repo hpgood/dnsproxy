@@ -10,11 +10,13 @@ import (
 	"net/netip"
 	"net/url"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/AdguardTeam/golibs/errors"
 	"github.com/AdguardTeam/golibs/logutil/slogutil"
 	"github.com/AdguardTeam/golibs/netutil"
+	"golang.org/x/net/proxy"
 )
 
 // Network is a network type for use in [Resolver]'s methods.
@@ -46,6 +48,7 @@ type DialHandler func(ctx context.Context, network Network, addr string) (conn n
 // ResolveDialContext returns a DialHandler that uses addresses resolved from u
 // using resolver.  l and u must not be nil.
 func ResolveDialContext(
+	socks5Addr string,
 	u *url.URL,
 	timeout time.Duration,
 	r Resolver,
@@ -89,13 +92,13 @@ func ResolveDialContext(
 		addrs = append(addrs, netip.AddrPortFrom(ip, port).String())
 	}
 
-	return NewDialContext(timeout, l, addrs...), nil
+	return NewDialContext(timeout, l, socks5Addr, addrs...), nil
 }
 
 // NewDialContext returns a DialHandler that dials addrs and returns the first
 // successful connection.  At least a single addr should be specified.  l must
 // not be nil.
-func NewDialContext(timeout time.Duration, l *slog.Logger, addrs ...string) (h DialHandler) {
+func NewDialContext(timeout time.Duration, l *slog.Logger, socks5Addr string, addrs ...string) (h DialHandler) {
 	addrLen := len(addrs)
 	if addrLen == 0 {
 		l.Debug("no addresses to dial")
@@ -119,18 +122,72 @@ func NewDialContext(timeout time.Duration, l *slog.Logger, addrs ...string) (h D
 			a.DebugContext(ctx, "dialing", "idx", i+1, "total", addrLen)
 
 			start := time.Now()
-			conn, err = dialer.DialContext(ctx, network, addr)
-			elapsed := time.Since(start)
-			if err != nil {
-				a.DebugContext(ctx, "connection failed", "elapsed", elapsed, slogutil.KeyError, err)
-				errs = append(errs, err)
 
-				continue
+			if socks5Addr != "" { //socks5 支持
+
+				// socks5Addr=socks5://user:pass@11.11.11.2:1080
+				if strings.Contains(socks5Addr, "//") {
+					arr := strings.Split(socks5Addr, "//")
+					if len(arr) <= 1 {
+						a.DebugContext(ctx, "invalid SOCKS5 addr format", "addr", socks5Addr)
+						errs = append(errs, errors.New("invalid SOCKS5 addr format"))
+						continue
+					}
+					socks5Addr = arr[1]
+				}
+
+				var auth *proxy.Auth
+				if strings.Contains(socks5Addr, "@") {
+					arr := strings.Split(socks5Addr, "@")
+					socks5Addr = arr[0]
+					if strings.Contains(socks5Addr, ":") {
+						authArr := strings.Split(socks5Addr, ":")
+						if len(authArr) != 2 {
+							a.DebugContext(ctx, "invalid SOCKS5 auth format", "addr", socks5Addr)
+							errs = append(errs, errors.New("invalid SOCKS5 auth format"))
+							continue
+						}
+						user := authArr[0]
+						pwd := authArr[1]
+						auth = &proxy.Auth{
+							User:     user,
+							Password: pwd,
+						}
+						passCode := "*"
+						if len(pwd) > 2 {
+							passCode = pwd[:2] + "***"
+						}
+						a.DebugContext(ctx, "connection(over SOCKS5) auth", "user", user, "pwd", passCode)
+					}
+				}
+
+				socks5Dialer, errDialer := proxy.SOCKS5("tcp", socks5Addr, auth, proxy.Direct)
+				if errDialer != nil {
+					a.DebugContext(ctx, "creating SOCKS5 dialer", slogutil.KeyError, errDialer)
+					errs = append(errs, errDialer)
+					continue
+				}
+				conn, err = socks5Dialer.Dial(network, addr)
+				elapsed := time.Since(start)
+				if err != nil {
+					a.DebugContext(ctx, "connection(over SOCKS5) failed", "elapsed", elapsed, slogutil.KeyError, err)
+					errs = append(errs, err)
+					continue
+				}
+				a.DebugContext(ctx, "connection(over SOCKS5) succeeded", "elapsed", elapsed)
+
+				return conn, nil
+			} else {
+				conn, err = dialer.DialContext(ctx, network, addr)
+				elapsed := time.Since(start)
+				if err != nil {
+					a.DebugContext(ctx, "connection failed", "elapsed", elapsed, slogutil.KeyError, err)
+					errs = append(errs, err)
+					continue
+				}
+				a.DebugContext(ctx, "connection succeeded", "elapsed", elapsed)
+				return conn, nil
 			}
-
-			a.DebugContext(ctx, "connection succeeded", "elapsed", elapsed)
-
-			return conn, nil
 		}
 
 		return nil, errors.Join(errs...)
