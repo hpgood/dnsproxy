@@ -106,6 +106,10 @@ type Options struct {
 	// PreferIPv6 tells the bootstrapper to prefer IPv6 addresses for an
 	// upstream.
 	PreferIPv6 bool
+
+	// SOCKS5Addr is the address of the SOCKS5 proxy server.  If empty, no
+	// SOCKS5 proxy will be used.
+	SOCKS5Addr string
 }
 
 // Clone copies o to a new struct.  Note, that this is not a deep clone.
@@ -123,6 +127,7 @@ func (o *Options) Clone() (clone *Options) {
 		RootCAs:                   o.RootCAs,
 		CipherSuites:              o.CipherSuites,
 		Logger:                    o.Logger,
+		SOCKS5Addr:                o.SOCKS5Addr,
 	}
 }
 
@@ -405,6 +410,6 @@ func newDialerInitializer(u *url.URL, opts *Options) (di DialerInitializer) {
 	}
 
 	return func() (h bootstrap.DialHandler, err error) {
-		return bootstrap.ResolveDialContext(u, opts.Timeout, boot, opts.PreferIPv6, l)
+		return bootstrap.ResolveDialContext(opts.SOCKS5Addr, u, opts.Timeout, boot, opts.PreferIPv6, l)
 	}
 }
