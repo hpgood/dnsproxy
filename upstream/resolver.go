@@ -56,6 +56,7 @@ func NewUpstreamResolver(resolverAddress string, opts *Options) (r *UpstreamReso
 		upsOpts.VerifyServerCertificate = opts.VerifyServerCertificate
 		upsOpts.PreferIPv6 = opts.PreferIPv6
 		upsOpts.Logger = opts.Logger
+		upsOpts.SOCKS5Addr = opts.SOCKS5Addr
 	}
 
 	ups, err := AddressToUpstream(resolverAddress, upsOpts)
