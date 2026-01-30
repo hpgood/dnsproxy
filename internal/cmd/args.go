@@ -67,6 +67,7 @@ const (
 	pendingRequestsEnabledIdx
 	dns64Idx
 	usePrivateRDNSIdx
+	socks5Idx
 )
 
 // commandLineOption contains information about a command-line option: its long
@@ -405,6 +406,12 @@ var commandLineOptions = []*commandLineOption{
 		short:     "",
 		valueType: "",
 	},
+	socks5Idx: {
+		description: "SOCKS5 proxy address to use for upstream connections.",
+		long:        "socks5",
+		short:       "",
+		valueType:   "",
+	},
 }
 
 // parseCmdLineOptions parses the command-line options.  conf must not be nil.
@@ -464,6 +471,7 @@ func parseCmdLineOptions(conf *configuration) (err error) {
 		pendingRequestsEnabledIdx:   &conf.PendingRequestsEnabled,
 		dns64Idx:                    &conf.DNS64,
 		usePrivateRDNSIdx:           &conf.UsePrivateRDNS,
+		socks5Idx:                   &conf.Socks5,
 	} {
 		addOption(flags, fieldPtr, commandLineOptions[i])
 	}
