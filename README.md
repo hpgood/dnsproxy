@@ -8,6 +8,11 @@ A simple DNS proxy server that supports all existing DNS protocols including
 `DNS-over-TLS`, `DNS-over-HTTPS`, `DNSCrypt`, and `DNS-over-QUIC`. Moreover,
 it can work as a `DNS-over-HTTPS`, `DNS-over-TLS` or `DNS-over-QUIC` server.
 
+Currect version support socks5!
+attention:
+ when your config https://cloudflare-dns.com/dns-query to upstream,
+ in order to use socks5, you need add "94.140.14.14 dns.adguard.com" to /etc/hosts first
+
 - [How to install](#how-to-install)
 - [How to build](#how-to-build)
 - [Usage](#usage)
@@ -125,6 +130,8 @@ Usage of ./dnsproxy:
         Ratelimit subnet length for IPv6.
   --refuse-any
         If specified, refuses ANY requests.
+  --socks5=addr
+        SOCKS5 server address.
   --timeout=duration
         Timeout for outbound DNS queries to remote upstream servers in a human-readable form
   --tls-crt=path/-c path
